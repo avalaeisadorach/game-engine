@@ -1,0 +1,13 @@
+name "game-engine"
+description "A simple 2D game engine."
+authors "Isadora Avalae"
+copyright "Copyright © 2022, Isadora Avalae"
+license "LGPL-2.1"
+
+targetType "library"
+targetName "gameengine"
+targetPath "bin"
+
+dependency "sdlang-d" version="~>0.10.6"
+dependency "gl3n" version="~>1.4.1"
+dependency "imagefmt" version="~>2.1.2"
