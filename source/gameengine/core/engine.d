@@ -3,13 +3,14 @@ module gameengine.core.engine;
 import core.thread;
 import core.memory;
 
-import gameengine.core;
+import gameengine.common;
 
 struct CoreEngine
 {
 private static:
     Application sApplication;
     bool sRunning;
+    RenderAPI sRenderAPI;
 
     void run()
     {
@@ -32,7 +33,14 @@ public static:
         Logger.initialize();
         Logger.core.write(LogLevel.debug_, "Initializing engine...");
 
+        import gameengine.rendering.opengl.api;
+        sRenderAPI = new OpenGLRenderAPI();
+        sRenderAPI.loadLibraries();
+
         sApplication = application;
+
+        sApplication.mWindow = sRenderAPI.createWindow(sApplication.getWindowProperties());
+        enforce(sApplication.mWindow, "Failed to create application window!");
 
         sApplication.initialize();
     }
@@ -52,5 +60,10 @@ public static:
     void cleanup()
     {
         sApplication.cleanup();
+    }
+
+    Application application()
+    {
+        return sApplication;
     }
 }

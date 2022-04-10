@@ -2,7 +2,7 @@ module gameengine.core.asset;
 
 import std.exception : enforce;
 
-import unstd.memory.weakref;
+import gameengine.core.weakref;
 
 import gameengine.utils;
 import gameengine.core;
@@ -27,8 +27,12 @@ public static:
         Logger.core.write(LogLevel.debug_, "Freeing all remaining assets...");
 
         foreach (weakref; sCache)
-            if (weakref.alive)
-                destroy(weakref.target);
+        {
+            Object asset = weakref.get;
+
+            if (asset)
+                destroy(asset);
+        }
     }
 
     T load(T)(string path)
@@ -38,16 +42,14 @@ public static:
 
         immutable string cacheKey = T.mangle ~ path;
         
-        Object asset = sCache.get(cacheKey);
-        if (asset)
-            return cast(T) asset;
+        if (auto weakref = sCache.get(cacheKey))
+            if (Object asset = weakref.get)
+                return cast(T) asset;
 
-        asset = loader(path);
-        T realAsset = cast(T) asset;
+        T newAsset = cast(T) loader(path);
+        enforce(newAsset, sfmt!"Loader function returned null or wrong type for '%s'!"(T.stringof));
 
-        enforce(realAsset, sfmt!"Loader function returned null or wrong type for '%s'!"(T.stringof));
-
-        sCache[cacheKey] = asset;
-        return realAsset;
+        sCache[cacheKey] = weak!Object(newAsset);
+        return newAsset;
     }
 }
